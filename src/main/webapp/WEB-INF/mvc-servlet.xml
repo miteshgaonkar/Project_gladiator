@@ -1,0 +1,57 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+      xmlns:tx="http://www.springframework.org/schema/tx"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx
+        https://www.springframework.org/schema/tx/spring-tx.xsd ">
+
+
+      <!-- Loading annotated class /beans -->
+    <context:component-scan base-package="com.lti."/>
+   <!-- <context:component-scan base-package="com.lti"/> --> 
+    <!--  DataSource Configuration -->
+    <!-- If two different databases -->
+      <bean id="oracleDS" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="oracle.jdbc.driver.OracleDriver"/>
+        <property name="url" value="jdbc:oracle:thin:@localhost:1521:XE"/>
+        <property name="username" value="USERFIN"/>
+        <property name="password" value="finance123"/>
+    </bean>
+    
+ 
+    
+    <!-- ========= Spring ORM/JPA Configuration============ -->
+    <!-- This bean will create EntityManager Factory object for us when using JPA.
+    Also there is no need of META-INF/persistence.xml file,since all ORM settings 
+    can be done within this bean definition itself -->
+    <bean id="myEmf"
+  class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+    <property name="dataSource" ref="oracleDS" /> <!-- Database settings -->
+    <property name="packagesToScan" value="com.lti.entity" /> <!-- Entity class location -->
+    <property name="jpaVendorAdapter">
+        <bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" />
+    </property>
+    <property name="jpaProperties">
+        <props>
+          <!-- <prop key="hibernate.hbm2ddl.auto">update</prop>  -->
+            <prop key="hibernate.show_sql">true</prop>
+         </props>
+    </property>
+</bean>
+ 
+ <!-- This bean will manage all the begin/commit/rollback -->
+<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+    <property name="entityManagerFactory" ref="myEmf" />
+</bean>
+
+<!-- Enabling support for File Upload in Spring MVC -->
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSizePerFile" value="52428800"/>
+    </bean>
+
+<tx:annotation-driven />
+</beans>
